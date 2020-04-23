@@ -1,19 +1,6 @@
-(function(H) {
+(function (H) {
     // Returns the first value that is not null or undefined.
     var pick = H.pick;
-
-    // This extends the getDataRows function to only include rows for points visible in
-    // the current chart view. Author: Torstein Honsi
-    // Source: https://github.com/highcharts/highcharts/issues/7913#issuecomment-371052869
-    H.wrap(H.Chart.prototype, 'getDataRows', function(proceed, multiLevelHeaders) {
-        var rows = proceed.call(this, multiLevelHeaders),
-            xMin = this.xAxis[0].min,
-            xMax = this.xAxis[0].max;
-        rows = rows.filter(function(row) {
-            return typeof row.x !== 'number' || (row.x >= xMin && row.x <= xMax);
-        });
-        return rows;
-    });
 
     // Add "Download XLSX" to the exporting menu in place of "Download XLS". Source:
     // https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/export-data/xlsx/
@@ -33,7 +20,7 @@
 
 
     // Add default XLSX exporting options to Chart init function
-    H.wrap(H.Chart.prototype, 'init', function(proceed) {
+    H.wrap(H.Chart.prototype, 'init', function (proceed) {
         var exporting = arguments[1].exporting;
         if (exporting) {
             exporting.xlsx = exporting.xlsx || {};
@@ -50,7 +37,7 @@
     });
 
     // Add default XLSX exporting options to Series init function
-    H.wrap(H.Series.prototype, 'init', function(proceed, chart, options) {
+    H.wrap(H.Series.prototype, 'init', function (proceed, chart, options) {
         options.xlsx = options.xlsx || {};
         options.xlsx.numberFormat = options.xlsx.numberFormat || undefined;
         options.xlsx.name = options.xlsx.name || undefined;
@@ -84,10 +71,10 @@
     // Check if object is empty
     // https://stackoverflow.com/a/50210676/6579114
     function isEmpty(obj) {
-      return !obj || Object.keys(obj).length === 0;
+        return !obj || Object.keys(obj).length === 0;
     }
 
-    H.Chart.prototype.downloadXLSX = function() {
+    H.Chart.prototype.downloadXLSX = function () {
         // Need to add 0.71 to desired column width for Calibri 11pt font to get the width
         // of the column in the exported file to match the desired width.
         // https://github.com/exceljs/exceljs/issues/744
@@ -147,7 +134,7 @@
         worksheetColumns.push(categoryColumnOptions);
 
         // Add each chart series to the worksheet columns array
-        chart.series.forEach(function(series, index) {
+        chart.series.forEach(function (series, index) {
             var seriesOptions = series.options;
             var seriesColumnOptions = {};
 
@@ -178,7 +165,7 @@
         // Set date values in category column for correct Excel export if chart has
         // a datetime axis
         if (chart.axes[0].isDatetimeAxis) {
-            dataRows.forEach(function(values, index) {
+            dataRows.forEach(function (values, index) {
                 // Need to add 'Z' to make sure values are in UTC time
                 var jsDate = new Date(values[0] + 'Z');
                 dataRows[index][0] = jsDate;
@@ -198,7 +185,7 @@
             for (var col = 0; col < worksheet.columns.length; col++) {
                 var column = worksheet.columns[col];
                 var columnFormattedValues = [];
-                column.values.forEach(function(value, rowIndex) {
+                column.values.forEach(function (value, rowIndex) {
                     var formattedValue;
                     // Don't attempt to format column header string. rowIndex = 1 because
                     // exceljs adds an undefined element at the start of the column values
@@ -217,7 +204,7 @@
                 });
 
                 // Determine the width of the longest cell in the column
-                var longest = columnFormattedValues.reduce(function(a, b) { return a.length > b.length ? a : b; }, '');
+                var longest = columnFormattedValues.reduce(function (a, b) { return a.length > b.length ? a : b; }, '');
 
                 // Ensure columns aren't thinner than Excel's default column width
                 // This is purely a style decision. Remove this check if you don't care
@@ -252,7 +239,7 @@
             }
 
             // Iterate over all non-null cells in header row and apply formatting
-            headerRow.eachCell(function(cell, colNumber) {
+            headerRow.eachCell(function (cell, colNumber) {
                 if (headerFont) {
                     cell.font = headerFont;
                 }
@@ -266,9 +253,9 @@
         // available properties at:
         // https://github.com/exceljs/exceljs/blob/master/lib/doc/workbook.js#L153
         if (xlsxOptions.workbook.fileProperties) {
-            Object.keys(xlsxOptions.workbook.fileProperties).forEach(function(key) {
+            Object.keys(xlsxOptions.workbook.fileProperties).forEach(function (key) {
                 var value = xlsxOptions.workbook.fileProperties[key];
-                if (['lastPrinted','created','modified'].includes(key)) {
+                if (['lastPrinted', 'created', 'modified'].includes(key)) {
                     value = new Date(value);
                 }
                 workbook[key] = value;
@@ -278,7 +265,7 @@
         // Write the .xlsx file using FileSaver.js
         var filename = pick(this.options.exporting.filename, this.getFilename()) + '.xlsx';
 
-        workbook.xlsx.writeBuffer().then(function(data) {
+        workbook.xlsx.writeBuffer().then(function (data) {
             var blob = new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
             saveAs(blob, filename);
         });
